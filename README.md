@@ -12,7 +12,7 @@ go install github.com/aarongodin/vpm@latest
 
 > TODO: provide install through other sources (homebrew for example)
 
-Once you have `vpm` installed, try listing pacakges with:
+Once you have `vpm` installed, try listing packages with:
 
 ```
 vpm packs
@@ -20,7 +20,7 @@ vpm packs
 
 To learn more commands, check `vpm -h`. Otherwise, continue below for details on the most common commands.
 
-### Adding packages
+### Adding and removing packages
 
 As of yet, there is no central registry for vim packages. You can have `vpm` install them for you by providing a URL to clone from:
 
@@ -33,6 +33,14 @@ If you don't specify a group, the package is added to the `default` group. You c
 ```
 vpm add --group colors --load opt git@github.com:altercation/vim-colors-solarized.git
 ```
+
+Removing a package is as simple as:
+
+```
+vpm remove vim-fugitive
+```
+
+Once a package is added, it's `name` is the remote repository name, including the username (e.g. `tpope/vim-fugitive`). However, when you refer to any added package in another command such as `remove` or `update`, you can use a partial string (such as `vim-fugitive`) as this is how we tend to the think of package names.
 
 ### Groups
 
