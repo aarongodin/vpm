@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// groupsCmd represents the groups command
 var groupsCmd = &cobra.Command{
 	Use:   "groups",
 	Short: "List groups",

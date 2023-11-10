@@ -1,7 +1,6 @@
 package pack
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 
@@ -10,33 +9,38 @@ import (
 )
 
 var (
-  repoNameMatcherSSH = regexp.MustCompile(`:(\w+\/[\w._-]+)\.git`)
-  repoNameMatcherHTTPS = regexp.MustCompile(`https://.*/(\w+\/[\w._-]+)`)
+  repoNameMatcherSSH = regexp.MustCompile(`git@.*:([\w-]+)\/([\w._-]+)\.git`)
+  repoNameMatcherHTTPS = regexp.MustCompile(`https:\/\/.*\/([\w-]+)\/([\w._-]+)\.git`)
 )
 
-var (
-  ErrPackage = errors.New("package error")
-  ErrPackageNoRepo = fmt.Errorf("%w: no git repository found", ErrPackage)
-  ErrPackageNoRemote = fmt.Errorf("%w: no git remotes found", ErrPackage)
-)
-
-func newErr(err error) error {
-  return fmt.Errorf("%w: %w", ErrPackage, err)
+type names struct{
+  user string
+  project string
 }
 
-func RepoNameFromRemote(remote string) string {
-  matchesSSH := repoNameMatcherSSH.FindStringSubmatch(remote)
-  if len(matchesSSH) > 1 {
-    return matchesSSH[1]
-  }
-  matchesHTTPS := repoNameMatcherHTTPS.FindStringSubmatch(remote)
-  if len(matchesHTTPS) > 1 {
-    return matchesHTTPS[1]
-  }
-  return ""
+func (n names) full() string {
+  return fmt.Sprintf("%s/%s", n.user, n.project)
 }
 
-func GetPackageRemote(packagePath string) (string, error) {
+func (n names) isEmpty() bool {
+  return n.user == "" || n.project == ""
+}
+
+var emptyNames = names{"", ""}
+
+func namesFromRemote(remote string) names {
+  m := repoNameMatcherSSH.FindStringSubmatch(remote)
+  if len(m) > 2 {
+    return names{m[1], m[2]}
+  }
+  m = repoNameMatcherHTTPS.FindStringSubmatch(remote)
+  if len(m) > 2 {
+    return names{m[1], m[2]}
+  }
+  return emptyNames
+}
+
+func getPackageRemote(packagePath string) (string, error) {
   r, err := git.PlainOpen(packagePath)
   if err != nil {
     return "", ErrPackageNoRepo
@@ -62,4 +66,11 @@ func GetPackageRemote(packagePath string) (string, error) {
 
 	log.Info().Msgf("no origin remote found for package at [%s]; using %s", packagePath, firstRemoteName)
 	return cfg.Remotes[firstRemoteName].URLs[0], nil
+}
+
+func clone(url, location string) error {
+  _, err := git.PlainClone(location, false, &git.CloneOptions{
+    URL: url,
+  })
+  return err
 }

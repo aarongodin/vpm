@@ -4,11 +4,22 @@ import (
 	"fmt"
 	"os"
 
+  "github.com/aarongodin/vpm/pkg/pack"
+  "github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
+
+// packDir is resolved at runtime (ex: `/home/user/.vim/pack`)
+var packDir string
+
+func initPackDir() {
+  if err := pack.SetPackDir(&packDir); err != nil {
+    log.Fatal().Err(err).Msg("fatal error finding user")
+  }
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
