@@ -1,11 +1,10 @@
 package pack
 
 import (
-  "errors"
-	"fmt"
 	"os"
 	"path"
 
+	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
 )
 
@@ -23,10 +22,20 @@ type Pack struct {
   Load string
 }
 
+var (
+  namespace = errorx.NewNamespace("pack")
+  packNotFound = errorx.NewType(namespace, "not_found", errorx.NotFound())
+  packAlreadyExists = errorx.NewType(namespace, "already_exists", errorx.Duplicate())
+)
+
+func IsLoadType(load string) bool {
+  return load == VIM_LOAD_START || load == VIM_LOAD_OPT
+}
+
 func ListGroups(packDir string) ([]string, error) {
   entries, err := os.ReadDir(packDir)
   if err != nil {
-    return nil, fmt.Errorf("error reading ~/.vim/pack: %w", err)
+    return nil, errorx.Decorate(err, "failed reading %s", packDir)
   }
   groups := make([]string, 0, len(entries))
   for _, e := range entries {
@@ -47,7 +56,7 @@ func ListPacksForGroup(packDir string, group string) ([]Pack, error) {
       case VIM_LOAD_START, VIM_LOAD_OPT:
         entries, err := os.ReadDir(path.Join(packDir, group, loadType.Name()))
         if err != nil {
-          return nil, fmt.Errorf("err reading loadType dir: %w", err)
+          return nil, errorx.Decorate(err, "failed reading group %s load type %s", group, loadType.Name())
         }
         for _, e := range entries {
           location := path.Join(packDir, group, loadType.Name(), e.Name())
@@ -89,7 +98,6 @@ func ListPacks(packDir string) ([]Pack, error) {
   return packs, nil
 }
 
-// Location finds the file path for a given pacakge name, if it is already added.
 func GetByName(packDir string, name string) (Pack, error) {
   packs, err := ListPacks(packDir)
   if err != nil {
@@ -100,30 +108,35 @@ func GetByName(packDir string, name string) (Pack, error) {
       return p, nil
     }
   }
-  return Pack{}, ErrPackageNotAdded
+  return Pack{}, packNotFound.New("pack %s not found", name)
 }
 
 func AddPack(packDir, url, group, load string) (Pack, error) {
+  if len(group) == 0 {
+    return Pack{}, errorx.IllegalArgument.New("group must be present")
+  }
+  if len(load) == 0 || !IsLoadType(load) {
+    return Pack{}, errorx.IllegalArgument.New("load must be a valid load type (either start or opt)")
+  }
+
   names := namesFromRemote(url)
   if names.isEmpty() {
-    return Pack{}, ErrPackageInvalidRemote
+    return Pack{}, errorx.IllegalArgument.New("could not determine package name from provided remote URL")
   }
 
   existing, err := GetByName(packDir, names.full())
-  if err != nil {
-    if errors.Is(err, ErrPackageNotAdded) {
-      pack, err := install(packDir, url, group, load, names)
-      if err != nil {
-        return Pack{}, err
-      }
-      return pack, nil
-    } else {
-      return Pack{}, err
-    }
+  if err != nil && !errorx.IsNotFound(err) { 
+    return Pack{}, errorx.Decorate(err, "failed to find existing pack")
+  }
+  if existing.Name == names.full() {
+    return existing, packAlreadyExists.New("pack %s already exists", existing.Name)
   }
 
-  log.Info().Any("pack", existing).Msgf("package already installed")
-  return existing, nil
+  pack, err := install(packDir, url, group, load, names)
+  if err != nil {
+    return Pack{}, errorx.Decorate(err, "failed to install pack %s", url)
+  }
+  return pack, nil
 }
 
 func RemovePack(packDir, name string) error {
@@ -133,20 +146,46 @@ func RemovePack(packDir, name string) error {
   }
 
   if err := os.RemoveAll(existing.Location); err != nil {
-    return ErrPackageFileOperation
+    return errorx.Decorate(err, "failed to remove pack directory")
   }
 
   return nil
 }
 
+func ChangePack(packDir, name, group, load string) (Pack, error) {
+  pack, err := GetByName(packDir, name)
+  if err != nil {
+    return Pack{}, err
+  }
+  if pack.Group == group && pack.Load == load {
+    log.Info().Msgf("notice: pack %s not changed", pack.Name)
+    return pack, nil
+  }
+  newGroup := pack.Group
+  if group != "" {
+    newGroup = group
+  }
+  newLoad := pack.Load
+  if load != "" {
+    newLoad = load
+  }
+  newLocation := path.Join(packDir, newGroup, newLoad, pack.Dirname)
+  if err := os.MkdirAll(path.Join(packDir, newGroup, newLoad), os.FileMode(int(0766))); err != nil {
+    return Pack{}, errorx.Decorate(err, "failed to create group and load directory")
+  }
+  if err := os.Rename(pack.Location, newLocation); err != nil {
+    return Pack{}, errorx.Decorate(err, "failed to change pack %s to group %s and load type %s", pack.Name, group, load)
+  }
+  pack.Location = newLocation
+  pack.Group = newGroup 
+  pack.Load = newLoad
+  return pack, nil
+}
+
 func install(packDir, url, group, load string, n names) (Pack, error) {
   location := path.Join(packDir, group, load, n.project)
   if err := clone(url, location); err != nil {
-    log.Err(err).
-      Str("url", url).
-      Str("location", location).
-      Msg("error cloning repository")
-    return Pack{}, ErrPackageClone
+    return Pack{}, errorx.Decorate(err, "failed to clone pack")
   }
   return Pack{
     Name: n.full(),

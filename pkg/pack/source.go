@@ -5,12 +5,14 @@ import (
 	"regexp"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
 )
 
 var (
   repoNameMatcherSSH = regexp.MustCompile(`git@.*:([\w-]+)\/([\w._-]+)\.git`)
   repoNameMatcherHTTPS = regexp.MustCompile(`https:\/\/.*\/([\w-]+)\/([\w._-]+)\.git`)
+  errNoRemote = errorx.NewType(namespace, "no_remote")
 )
 
 type names struct{
@@ -43,15 +45,15 @@ func namesFromRemote(remote string) names {
 func getPackageRemote(packagePath string) (string, error) {
   r, err := git.PlainOpen(packagePath)
   if err != nil {
-    return "", ErrPackageNoRepo
+    return "", errorx.Decorate(err, "failed to open local package git")
   }
   cfg, err := r.Config()
   if err != nil {
-		return "", newErr(err)
+		return "", errorx.Decorate(err, "failed to read local git repo config")
   }
 
   if len(cfg.Remotes) == 0 {
-    return "", ErrPackageNoRemote
+    return "", errNoRemote.New("no git remote at %s", packagePath)
   }
 
 	firstRemoteName := ""

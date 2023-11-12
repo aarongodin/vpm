@@ -10,7 +10,7 @@ import (
 
 var HeaderStyle = lipgloss.NewStyle().Padding(0, 1).Bold(true)
 var RowStyle = lipgloss.NewStyle().Padding(0, 1)
-var SuccessStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("12"))
+var InfoStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("12"))
 
 func ShowPackageList(packs []pack.Pack) fmt.Stringer {
   t := table.New().

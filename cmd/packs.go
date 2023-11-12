@@ -17,7 +17,11 @@ var packsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
     packs, err := pack.ListPacks(packDir)
     if err != nil {
-      log.Fatal().Err(err).Msg("fatal error listing packages")
+      log.Fatal().Err(err).Msg("unexpected error")
+    }
+    if len(packs) == 0 {
+      fmt.Println(format.InfoStyle.Render("no packages found"))
+      return
     }
     fmt.Println(format.ShowPackageList(packs))
 	},

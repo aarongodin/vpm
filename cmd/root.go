@@ -6,6 +6,7 @@ import (
 
   "github.com/aarongodin/vpm/pkg/pack"
   "github.com/rs/zerolog/log"
+  "github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -18,6 +19,11 @@ var packDir string
 func initPackDir() {
   if err := pack.SetPackDir(&packDir); err != nil {
     log.Fatal().Err(err).Msg("fatal error finding user")
+  }
+
+  // TODO(aarongodin): what are the right permissions for this directory
+  if err := os.MkdirAll(packDir, os.FileMode(int(0766))); err != nil {
+    log.Fatal().Err(err).Msg("error creating vim pack directory")
   }
 }
 
@@ -40,6 +46,8 @@ func Execute() {
 func init() {
   initPackDir()
 	cobra.OnInitialize(initConfig)
+
+  log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
