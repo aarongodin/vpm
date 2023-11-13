@@ -2,6 +2,7 @@
 
 `vpm` is a CLI tool for managing packages with the default Vim package manager. Check out `:help packages` in Vim to learn more before using `vpm`.
 
+
 ## Overview
 
 You can install `vpm` with:
@@ -57,7 +58,7 @@ Groups can be specified when adding packages, otherwise the group `default` is u
 Change a package's group or loading type with:
 
 ```
-vpm change --load opt --group git vim-fugitive 
+vpm change --load opt --group git vim-fugitive
 ```
 
 ### Managing updates

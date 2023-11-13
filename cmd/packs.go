@@ -13,21 +13,20 @@ import (
 var packsCmd = &cobra.Command{
 	Use:   "packs",
 	Short: "List packages",
-  Long: "List packages managed through your .vim/pack directory",
+	Long:  "List packages managed through your .vim/pack directory",
 	Run: func(cmd *cobra.Command, args []string) {
-    packs, err := pack.ListPacks(packDir)
-    if err != nil {
-      log.Fatal().Err(err).Msg("unexpected error")
-    }
-    if len(packs) == 0 {
-      fmt.Println(format.InfoStyle.Render("no packages found"))
-      return
-    }
-    fmt.Println(format.ShowPackageList(packs))
+		packs, err := pack.ListPacks(packDir)
+		if err != nil {
+			log.Fatal().Err(err).Msg("unexpected error")
+		}
+		if len(packs) == 0 {
+			fmt.Println(format.InfoStyle.Render("no packages found"))
+			return
+		}
+		fmt.Println(format.ShowPackageList(packs))
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(packsCmd)
 }
-

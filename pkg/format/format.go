@@ -1,7 +1,7 @@
 package format
 
 import (
-  "fmt"
+	"fmt"
 
 	"github.com/aarongodin/vpm/pkg/pack"
 	"github.com/charmbracelet/lipgloss"
@@ -13,21 +13,20 @@ var RowStyle = lipgloss.NewStyle().Padding(0, 1)
 var InfoStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("12"))
 
 func ShowPackageList(packs []pack.Pack) fmt.Stringer {
-  t := table.New().
-    StyleFunc(func (row, col int) lipgloss.Style {
-      switch {
-      case row == 0:
-        return HeaderStyle
-      default:
-        return RowStyle
-      }
-    }).
-    Headers("name", "group", "load", "remote", "head")
+	t := table.New().
+		StyleFunc(func(row, col int) lipgloss.Style {
+			switch {
+			case row == 0:
+				return HeaderStyle
+			default:
+				return RowStyle
+			}
+		}).
+		Headers("name", "group", "load", "remote", "head")
 
-  for _, p := range packs {
-    t.Row(p.Name, p.Group, p.Load, p.RemoteURL, "")
-  }
+	for _, p := range packs {
+		t.Row(p.Name, p.Group, p.Load, p.RemoteURL, "")
+	}
 
-  return t
+	return t
 }
-

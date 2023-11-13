@@ -12,18 +12,18 @@ import (
 var groupsCmd = &cobra.Command{
 	Use:   "groups",
 	Short: "List groups",
-  Long: "List groups of packages managed by the subdirectories of the pack folder",
+	Long:  "List groups of packages managed by the subdirectories of the pack folder",
 	Run: func(cmd *cobra.Command, args []string) {
-    groups, err := pack.ListGroups(packDir)
-    if err != nil {
-      log.Fatal().Err(err).Msg("unexpected error")
-    }
-    if len(groups) == 0 {
-      fmt.Println(format.InfoStyle.Render("no groups found"))
-    }
-    for _, g := range groups {
-      fmt.Println(g)
-    }
+		groups, err := pack.ListGroups(packDir)
+		if err != nil {
+			log.Fatal().Err(err).Msg("unexpected error")
+		}
+		if len(groups) == 0 {
+			fmt.Println(format.InfoStyle.Render("no groups found"))
+		}
+		for _, g := range groups {
+			fmt.Println(g)
+		}
 	},
 }
 
