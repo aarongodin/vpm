@@ -24,7 +24,7 @@ func init() {
       fmt.Println(format.InfoStyle.Render("packs changed"))
     },
   }
-  changeCmd.Flags().StringVarP(&group, "group", "g", "default", "specify package group")
-  changeCmd.Flags().StringVarP(&load, "load", "l", "start", "specify package loading")
+  changeCmd.Flags().StringVarP(&group, "group", "g", "", "specify package group")
+  changeCmd.Flags().StringVarP(&load, "load", "l", "", "specify package loading")
 	rootCmd.AddCommand(changeCmd)
 }
