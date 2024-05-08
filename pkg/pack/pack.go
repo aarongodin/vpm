@@ -21,6 +21,7 @@ type Pack struct {
 	RemoteURL string `json:"remoteURL"`
 	Group     string `json:"group"`
 	Load      string `json:"load"`
+	Head      string `json:"head"`
 }
 
 var (
@@ -62,6 +63,7 @@ func ListPacksForGroup(packDir string, group string) ([]Pack, error) {
 			for _, e := range entries {
 				location := path.Join(packDir, group, loadType.Name(), e.Name())
 				remote, _ := getPackageRemote(location)
+				head, _ := getPackageHead(location)
 				names := namesFromRemote(remote)
 				packs = append(packs, Pack{
 					Name:      names.full(),
@@ -70,6 +72,7 @@ func ListPacksForGroup(packDir string, group string) ([]Pack, error) {
 					Location:  location,
 					Group:     group,
 					Load:      loadType.Name(),
+					Head:      head,
 				})
 			}
 		default:
@@ -188,6 +191,10 @@ func install(packDir, url, group, load string, n names) (Pack, error) {
 	if err := clone(url, location); err != nil {
 		return Pack{}, errorx.Decorate(err, "failed to clone pack")
 	}
+	head, err := getPackageHead(location)
+	if err != nil {
+		return Pack{}, errorx.Decorate(err, "failed to get package head")
+	}
 	return Pack{
 		Name:      n.full(),
 		RemoteURL: url,
@@ -195,6 +202,7 @@ func install(packDir, url, group, load string, n names) (Pack, error) {
 		Location:  location,
 		Group:     group,
 		Load:      load,
+		Head:      head,
 	}, nil
 }
 

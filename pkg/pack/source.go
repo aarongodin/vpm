@@ -42,6 +42,18 @@ func namesFromRemote(remote string) names {
 	return emptyNames
 }
 
+func getPackageHead(packagePath string) (string, error) {
+	repo, err := git.PlainOpen(packagePath)
+	if err != nil {
+		return "", errorx.Decorate(err, "failed to open git repository at %s", packagePath)
+	}
+	ref, err := repo.Head()
+	if err != nil {
+		return "", errorx.Decorate(err, "failed to retrieve HEAD ref at %s", packagePath)
+	}
+	return ref.Hash().String(), nil
+}
+
 func getPackageRemote(packagePath string) (string, error) {
 	r, err := git.PlainOpen(packagePath)
 	if err != nil {

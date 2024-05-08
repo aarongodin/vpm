@@ -25,7 +25,7 @@ func ShowPackageList(packs []pack.Pack) fmt.Stringer {
 		Headers("name", "group", "load", "remote", "head")
 
 	for _, p := range packs {
-		t.Row(p.Name, p.Group, p.Load, p.RemoteURL, "")
+		t.Row(p.Name, p.Group, p.Load, p.RemoteURL, p.Head[:7])
 	}
 
 	return t

@@ -16,7 +16,7 @@ go install github.com/aarongodin/vpm@latest
 Once you have `vpm` installed, try listing packages with:
 
 ```
-vpm packs
+vpm list
 ```
 
 To learn more commands, check `vpm -h`. Otherwise, continue below for details on the most common commands.
