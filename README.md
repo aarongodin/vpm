@@ -78,3 +78,19 @@ vpm outdated
 ```
 
 A list is displayed showing the packages that are not on the latest git SHA from the remote.
+
+### Sourcing a list of packages
+
+You can add several packages at once using:
+
+```
+vpm source <filename>
+```
+
+The file is expected to be a YAML file including an array of packages to add. You can see what this file looks like for your currently installed packages with:
+
+```
+vpm ls -f yaml
+```
+
+Saving the output of the above to a file means you can transfer a list of packages to another machine using the file, or maintain the list in another location like a dotfiles repo.
