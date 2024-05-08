@@ -10,9 +10,10 @@ import (
 )
 
 var groupsCmd = &cobra.Command{
-	Use:   "groups",
-	Short: "List groups",
-	Long:  "List groups of packages managed by the subdirectories of the pack folder",
+	Use:     "groups",
+	Aliases: []string{"group", "g"},
+	Short:   "List groups",
+	Long:    "List groups of packages managed by the subdirectories of the pack folder",
 	Run: func(cmd *cobra.Command, args []string) {
 		groups, err := pack.ListGroups(packDir)
 		if err != nil {

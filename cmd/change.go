@@ -12,7 +12,7 @@ import (
 func init() {
 	var group, load string
 	var changeCmd = &cobra.Command{
-		Use:   "change",
+		Use:   "change pack",
 		Short: "Change properties of an added package",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {

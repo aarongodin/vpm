@@ -12,7 +12,7 @@ import (
 var (
 	repoNameMatcherSSH   = regexp.MustCompile(`git@.*:([\w-]+)\/([\w._-]+)\.git`)
 	repoNameMatcherHTTPS = regexp.MustCompile(`https:\/\/.*\/([\w-]+)\/([\w._-]+)\.git`)
-	errNoRemote          = errorx.NewType(namespace, "no_remote")
+	errNoRemote          = errorx.NewType(errNS, "no_remote")
 )
 
 type names struct {

@@ -14,7 +14,7 @@ var InfoStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("12"))
 
 func ShowPackageList(packs []pack.Pack) fmt.Stringer {
 	t := table.New().
-		StyleFunc(func(row, col int) lipgloss.Style {
+		StyleFunc(func(row, _ int) lipgloss.Style {
 			switch {
 			case row == 0:
 				return HeaderStyle

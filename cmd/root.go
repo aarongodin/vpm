@@ -12,6 +12,7 @@ import (
 )
 
 var cfgFile string
+var outputFormat string
 
 // packDir is resolved at runtime (ex: `/home/user/.vim/pack`)
 var packDir string
@@ -55,9 +56,10 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.vpm.yaml)")
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// // Cobra also supports local flags, which will only run
+	// // when this action is called directly.
+	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVarP(&outputFormat, "format", "f", "", `Output format (if specified, one of either "yaml" or "json")`)
 }
 
 // initConfig reads in config file and ENV variables if set.

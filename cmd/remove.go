@@ -11,9 +11,10 @@ import (
 
 func init() {
 	var removeCmd = &cobra.Command{
-		Use:   "remove",
-		Short: "Remove a package",
-		Args:  cobra.MinimumNArgs(1),
+		Use:     "remove",
+		Aliases: []string{"rm"},
+		Short:   "Remove a package",
+		Args:    cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			for _, name := range args {
 				if err := pack.RemovePack(packDir, name); err != nil {

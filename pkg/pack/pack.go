@@ -4,6 +4,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/joomcode/errorx"
 	"github.com/rs/zerolog/log"
 )
@@ -14,18 +15,18 @@ const (
 )
 
 type Pack struct {
-	Name      string
-	Dirname   string
-	Location  string
-	RemoteURL string
-	Group     string
-	Load      string
+	Name      string `json:"name"`
+	Dirname   string `json:"dirname"`
+	Location  string `json:"location"`
+	RemoteURL string `json:"remoteURL"`
+	Group     string `json:"group"`
+	Load      string `json:"load"`
 }
 
 var (
-	namespace         = errorx.NewNamespace("pack")
-	packNotFound      = errorx.NewType(namespace, "not_found", errorx.NotFound())
-	packAlreadyExists = errorx.NewType(namespace, "already_exists", errorx.Duplicate())
+	errNS                = errorx.NewNamespace("pack")
+	ErrPackNotFound      = errorx.NewType(errNS, "not_found", errorx.NotFound())
+	ErrPackAlreadyExists = errorx.NewType(errNS, "already_exists", errorx.Duplicate())
 )
 
 func IsLoadType(load string) bool {
@@ -108,7 +109,7 @@ func GetByName(packDir string, name string) (Pack, error) {
 			return p, nil
 		}
 	}
-	return Pack{}, packNotFound.New("pack %s not found", name)
+	return Pack{}, ErrPackNotFound.New("pack %s not found", name)
 }
 
 func AddPack(packDir, url, group, load string) (Pack, error) {
@@ -129,7 +130,7 @@ func AddPack(packDir, url, group, load string) (Pack, error) {
 		return Pack{}, errorx.Decorate(err, "failed to find existing pack")
 	}
 	if existing.Name == names.full() {
-		return existing, packAlreadyExists.New("pack %s already exists", existing.Name)
+		return existing, ErrPackAlreadyExists.New("pack %s already exists", existing.Name)
 	}
 
 	pack, err := install(packDir, url, group, load, names)
@@ -195,4 +196,34 @@ func install(packDir, url, group, load string, n names) (Pack, error) {
 		Group:     group,
 		Load:      load,
 	}, nil
+}
+
+func UpdatePack(packDir, name string) (string, error) {
+	pack, err := GetByName(packDir, name)
+	if err != nil {
+		return "", err
+	}
+
+	repo, err := git.PlainOpen(pack.Location)
+	if err != nil {
+		return "", errorx.Decorate(err, "failed to open git repository at %s", pack.Location)
+	}
+
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return "", errorx.Decorate(err, "failed to open git worktree at %s", pack.Location)
+	}
+
+	err = worktree.Pull(&git.PullOptions{
+		RemoteName: "origin",
+	})
+	if err != nil && err != git.NoErrAlreadyUpToDate {
+		return "", errorx.Decorate(err, "failed to pull git repo at %s", pack.Location)
+	}
+
+	ref, err := repo.Head()
+	if err != nil {
+		return "", errorx.Decorate(err, "failed to retrieve HEAD ref at %s", pack.Location)
+	}
+	return ref.Hash().String()[:7], nil
 }
